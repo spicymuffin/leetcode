@@ -1,51 +1,22 @@
 class Solution {
     public int characterReplacement(String s, int k) {
-        HashSet<Character> charset = new HashSet<>();
-        for (int i = 0; i < s.length(); i++) {
-            charset.add(s.charAt(i));
-        }
+        int[] freqmap = new int[26];
 
-        int l = 0;
-        int r = 0;
-
-        int k_cpy = k;
-
-        int max = -1;
-
-        for (char c : charset) {
-            int curr = 0;
-            // System.out.printf("currchar=%c\n", c);
-            while (true) {
-                if (r < s.length()) {
-                    if (c == s.charAt(r)) {
-                        // System.out.printf("scan, r=%d\n", r);
-                        curr++;
-                        max = Math.max(curr, max);
-                        r++;
-                    } else {
-                        k--;
-                        curr++;
-                        r++;
-                        while (k < 0 && l < r) {
-                            // System.out.printf("replenish, l=%d, k=%d\n", r, k);
-                            if (l < s.length() && c != s.charAt(l)) {
-                                k++;
-                            }
-                            l++;
-                            curr--;
-                        }
-                        max = Math.max(curr, max);
-                    }
-                } else {
-                    break;
-                }
+        int l = 0, r = 0;
+        int maxfreq = -1;
+        for (r = 0; r < s.length(); r++) {
+            int idx = s.charAt(r) - 'A';
+            freqmap[idx]++;
+            if (maxfreq < freqmap[idx]) {
+                maxfreq = freqmap[idx];
             }
 
-            k = k_cpy;
-            l = 0;
-            r = 0;
+            if ((r - l + 1) - maxfreq > k) {
+                freqmap[s.charAt(l) - 'A']--;
+                l++;
+            }
         }
 
-        return max;
+        return r - l; // we need to undo the last iteration +1 in the for loopf
     }
 }
