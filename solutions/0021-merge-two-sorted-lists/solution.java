@@ -31,10 +31,8 @@ class Solution {
         while (true) {
             if (list1.next == null) {
                 list1.next = list2;
-                System.gc();
                 return ans;
             } else if (list2 == null) {
-                System.gc();
                 return ans;
             }
 
