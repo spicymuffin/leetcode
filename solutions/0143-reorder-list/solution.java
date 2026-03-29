@@ -10,25 +10,40 @@
  */
 class Solution {
     public void reorderList(ListNode head) {
-        List<ListNode> ls = new ArrayList<>();
-        ListNode it = head;
-        while (it != null) {
-            ls.add(it);
-            it = it.next;
+        // find middle pass
+        ListNode fast = head;
+        ListNode slow = head;
+        while (fast.next != null && fast.next.next != null) {
+            slow = slow.next;
+            fast = fast.next.next;
         }
 
-        int l = 0;
-        int r = ls.size() - 1;
-        while (l < r) {
-            ls.get(l).next = ls.get(r);
-            // System.out.printf("linking %d to %d\n", ls.get(l).val, ls.get(r).val);
-            ls.get(r).next = ++l >= r ? null : ls.get(l);
-            // System.out.printf("linking %d to %d\n", ls.get(r).val, ls.get(l).val);
-            r--;
+        if (fast.next != null) {
+            fast = fast.next;
         }
 
-        if (ls.size() % 2 != 0) {
-            ls.get(l).next = null;
+        fast = slow;
+
+        ListNode next = fast.next;
+        ListNode temp;
+        while (next != null) {
+            temp = fast;
+            fast = next;
+            next = fast.next;
+            fast.next = temp;
         }
+
+        slow = head;
+
+        while (fast != slow) {
+            next = slow.next;
+            temp = fast.next; // is the one that fast needs to jump to
+            slow.next = fast;
+            fast.next = next;
+            slow = next;
+            fast = temp;
+        }
+
+        fast.next = null;
     }
 }
