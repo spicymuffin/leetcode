@@ -1,5 +1,5 @@
 class Solution {
-    static int[] cache = new int[100];
+    static int[] cache = new int[46];
 
     public int climbStairs(int n) {
         if (n == 1) {
