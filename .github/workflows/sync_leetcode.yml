@@ -10,7 +10,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Validate LeetCode session
+        id: validate_session
+        env:
+          LEETCODE_CSRF_TOKEN: ${{ secrets.LEETCODE_CSRF_TOKEN }}
+          LEETCODE_SESSION: ${{ secrets.LEETCODE_SESSION }}
+        run: |
+          response_file="$(mktemp)"
+          curl --silent --show-error \
+            'https://leetcode.com/graphql/' \
+            -H 'content-type: application/json' \
+            -H 'origin: https://leetcode.com' \
+            -H 'referer: https://leetcode.com' \
+            -H "x-csrftoken: ${LEETCODE_CSRF_TOKEN}" \
+            -H "cookie: csrftoken=${LEETCODE_CSRF_TOKEN}; LEETCODE_SESSION=${LEETCODE_SESSION};" \
+            --data-raw '{"query":"query { submissionList(offset: 0, limit: 1, questionSlug: null) { submissions { id } } }"}' \
+            > "${response_file}"
+
+          if jq -e '.data.submissionList.submissions | type == "array"' "${response_file}" >/dev/null; then
+            echo "should_sync=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "::warning::Skipping sync because LeetCode returned an unexpected submission payload. Refresh LEETCODE_CSRF_TOKEN and LEETCODE_SESSION secrets."
+            echo "should_sync=false" >> "${GITHUB_OUTPUT}"
+          fi
+
       - name: Sync
+        if: steps.validate_session.outputs.should_sync == 'true'
         uses: joshcai/leetcode-sync@v1.7
         with:
           github-token: ${{ github.token }}
